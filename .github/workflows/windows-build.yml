@@ -1,0 +1,38 @@
+name: Build Windows Executable
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Qt6 and WebEngine
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.6.3'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+          modules: 'qtwebengine'
+
+      - name: Compile Application
+        shell: cmd
+        run: |
+          cd 1.4
+          mkdir build
+          cd build
+          qmake ..\hive2browse.pro
+          nmake
+
+      - name: Package with DLLs
+        shell: cmd
+        run: |
+          cd 1.4\build
+          windeployqt --qmldir .. hive2browse.exe
+
+      - name: Upload Windows Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: hive2browse-windows
+          path: 1.4/build/
