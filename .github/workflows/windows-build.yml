@@ -16,23 +16,27 @@ jobs:
           arch: 'win64_msvc2019_64'
           modules: 'qtwebengine'
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Compile Application
         shell: cmd
         run: |
-          cd 1.4
           mkdir build
           cd build
-          qmake ..\hive2browse.pro
+          qmake ..\hive2browse.pro CONFIG+=release
           nmake
 
       - name: Package with DLLs
         shell: cmd
         run: |
-          cd 1.4\build
-          windeployqt --qmldir .. hive2browse.exe
+          cd build\release
+          windeployqt --release --no-translations hive2browse.exe
 
       - name: Upload Windows Bundle
         uses: actions/upload-artifact@v4
         with:
           name: hive2browse-windows
-          path: 1.4/build/
+          path: build/release/
